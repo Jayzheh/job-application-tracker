@@ -1,3 +1,34 @@
-.xlsx
+# Excel files
+*.xlsx
+*.xls
+*.xlsm
+~$*.xlsx    # Temporary Excel files
+
+# Python
 __pycache__/
+<<<<<<< HEAD
 .DS_Store
+**/.DS_Store
+images/.DS_Store
+=======
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+ENV/
+.env
+.venv/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+.DS_Store   
+
+# Logs
+*.log
+
+# Local configuration
+config.ini
+>>>>>>> 829b083d59c95573965a782663cf44c8dc2ffa35
