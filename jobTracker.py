@@ -1,14 +1,30 @@
 import pandas as pd
 from datetime import datetime, timedelta
+import os
 
 class JobTracker:
     def __init__(self, file_path):
         self.file_path = file_path
-        self.df = pd.read_excel(file_path)
-        
+        # Create file if it doesn't exist
+        if not os.path.exists(file_path):
+            columns = ['Entreprise', 'Lien vers l\'offre', 'Date Candidature', 
+                      'Date de relance', 'Date de relance 2', 'Réponse', 
+                      'Contact', 'Commentaire']
+            self.df = pd.DataFrame(columns=columns)
+            self.save()
+        else:
+            try:
+                self.df = pd.read_excel(file_path, engine='openpyxl')
+            except Exception as e:
+                print(f"Error reading file: {e}")
+                self.df = pd.DataFrame()
+
     def display_data(self):
-        print("\nCurrent Applications:")
-        print(self.df.to_string(index=True))
+        if self.df.empty:
+            print("\nNo entries found.")
+        else:
+            print("\nCurrent Applications:")
+            print(self.df.to_string(index=True))
         
     def add_entry(self):
         print("\nAdding new entry:")
@@ -26,6 +42,10 @@ class JobTracker:
         self.save()
         
     def update_entry(self):
+        if self.df.empty:
+            print("\nNo entries to update.")
+            return
+        
         self.display_data()
         try:
             row_idx = int(input("\nEnter row number to update: "))
@@ -33,19 +53,27 @@ class JobTracker:
             new_value = input("Enter new value: ")
             self.df.at[row_idx, column] = new_value
             self.save()
-        except:
-            print("Invalid input. Please try again.")
+        except Exception as e:
+            print(f"Error updating entry: {e}")
             
     def delete_entry(self):
+        if self.df.empty:
+            print("\nNo entries to delete.")
+            return
+            
         self.display_data()
         try:
             row_idx = int(input("\nEnter row number to delete: "))
             self.df = self.df.drop(row_idx)
             self.save()
-        except:
-            print("Invalid input. Please try again.")
+        except Exception as e:
+            print(f"Error deleting entry: {e}")
             
     def clear_all(self):
+        if self.df.empty:
+            print("\nNo data to clear.")
+            return
+            
         confirm = input("Are you sure you want to clear all data? (yes/no): ")
         if confirm.lower() == 'yes':
             self.df = pd.DataFrame(columns=self.df.columns)
@@ -53,11 +81,17 @@ class JobTracker:
             print("All data cleared.")
         
     def save(self):
-        self.df.to_excel(self.file_path, index=False)
-        print("Changes saved successfully!")
+        try:
+            self.df.to_excel(self.file_path, index=False, engine='openpyxl')
+            print("Changes saved successfully!")
+        except Exception as e:
+            print(f"Error saving file: {e}")
 
 def main():
-    tracker = JobTracker("Digi2 - [Prénom] [NOM] copy.xlsx")
+    file_name = "Digi2 - [Prénom] [NOM] copy.xlsx"
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_name)
+    
+    tracker = JobTracker(file_path)
     
     while True:
         print("\n=== Job Application Tracker ===")
