@@ -5,7 +5,7 @@ import os
 class JobTracker:
     def __init__(self, file_path):
         self.file_path = file_path
-        # Create file if it doesn't exist
+        
         if not os.path.exists(file_path):
             columns = ['Entreprise', 'Lien vers l\'offre', 'Date Candidature', 
                       'Date de relance', 'Date de relance 2', 'Réponse', 
