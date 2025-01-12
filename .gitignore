@@ -19,7 +19,7 @@ ENV/
 .idea/
 .vscode/
 *.swp
-.DS_Store    # For Mac users
+.DS_Store   
 
 # Logs
 *.log
