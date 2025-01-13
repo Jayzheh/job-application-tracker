@@ -1,30 +1,55 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+from email_module import send_excel_file
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 class JobTracker:
     def __init__(self):
-        # Get user first and last name
-        self.prenom = input("Enter your first name (Prénom): ")
-        self.nom = input("Enter your last name (NOM): ")
-        self.file_name = f"Digi2 - {self.prenom} {self.nom}.xlsx"
-        self.file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.file_name)
+        # Look for existing Excel files in current dir
+        default_file = "Digi2 - [Prénom] [NOM].xlsx"
+        default_copy = "Digi2 - [Prénom] [NOM] copy.xlsx"
         
-        if not os.path.exists(self.file_path):
+        excel_files = [f for f in os.listdir() 
+                    if f.startswith('Digi2 - ') 
+                    and f.endswith('.xlsx')
+                    and f != default_file 
+                    and f != default_copy
+                    and '_backup_' not in f]
+        
+        if excel_files:
+            # Use the existing personalized file
+            self.file_name = excel_files[0]
+            self.file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.file_name)
+            try:
+                self.df = pd.read_excel(self.file_path, engine='openpyxl')
+                print(f"Using existing file: {self.file_name}")
+            except Exception as e:
+                print(f"Error reading file: {e}")
+                self.df = pd.DataFrame()
+        else:
+            # Create new personalized file
+            self.prenom = input("Enter your first name (Prénom): ")
+            self.nom = input("Enter your last name (NOM): ")
+            self.file_name = f"Digi2 - {self.prenom} {self.nom}.xlsx"
+            self.file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.file_name)
+            
             columns = ['Entreprise', 'Lien vers l\'offre', 'Date Candidature', 
                     'Date de relance', 'Date de relance 2', 'Réponse', 
                     'Contact', 'Commentaire']
             self.df = pd.DataFrame(columns=columns)
             self.save_file()
+                
+    #Email 
+    def send_email(self):
+        """Send the current Excel file via email"""
+        print("\nSending email...")
+        if send_excel_file(self.file_path, f"{self.prenom} {self.nom}"):
+            print("Email sent successfully!")
         else:
-            try:
-                self.df = pd.read_excel(self.file_path, engine='openpyxl')
-            except Exception as e:
-                print(f"Error reading file: {e}")
-                self.df = pd.DataFrame()
+            print("Failed to send email. Please try again.")
 
     def save_file(self):
         try:
@@ -156,10 +181,13 @@ def main():
         print("4. Delete entry")
         print("5. Clear all data")
         print("6. Exit")
+        print("7. Send file by email (for Epitech student)")
         
-        choice = input("\nEnter your choice (1-6): ")
+        choice = input("\nEnter your choice (1-7): ")
         
-        if choice == '6':
+        if choice == '7':
+            tracker.send_email()
+        elif choice == '6':
             confirm = input("Are you sure you want to exit? (yes/no): ")
             if confirm.lower() in ['yes', 'y']:
                 print("Goodbye!")
